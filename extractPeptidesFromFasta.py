@@ -49,8 +49,7 @@ import argparse
 argparser = argparse.ArgumentParser(description=('Extract peptides from FASTA'
                                               ' protein sequence files.'))
 argparser.add_argument('fasta_files', nargs='+',
-                    help=('List of FASTA files containing protein sequences.'
-                          ' If no files are given, will use STDIN.'))
+                    help=('List of FASTA files containing protein sequences.'))
 argparser.add_argument('--minmass', type=float, default=600.0,
                     help=('minimum peptide mass. Peptides with mass less'
                           ' than this will no be included in the output'))
