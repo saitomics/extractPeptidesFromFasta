@@ -1,0 +1,4 @@
+extractPeptidesFromFasta
+========================
+
+extractPeptidesFromFasta
