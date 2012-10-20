@@ -42,30 +42,48 @@ def includePyteomics():
 includePyteomics()
 from pyteomics import fasta, parser, mass
 
+"""
+Process arguments.
+"""
+import argparse
+argparser = argparse.ArgumentParser(description=('Extract peptides from FASTA'
+                                              ' protein sequence files.'))
+argparser.add_argument('fasta_files', nargs='+',
+                    help=('List of FASTA files containing protein sequences.'
+                          ' If no files are given, will use STDIN.'))
+argparser.add_argument('--minmass', type=float, default=600.0,
+                    help=('minimum peptide mass. Peptides with mass less'
+                          ' than this will no be included in the output'))
+argparser.add_argument('--maxmass', type=float, default=3500.0,
+                    help=('maximum peptide mass. Peptides with mass greater'
+                          ' than this will no be included in the output'))
 
 """
 Main method.
 """
 def main():
+    args = argparser.parse_args()
+    fasta_files = args.fasta_files
 
     # Only include peptides within these mass ranges.
     MIN_MASS = 600.0
     MAX_MASS = 3500.0
 
-    # Read sequence records from file.
-    fasta_file = os.path.join('data', 'syn7803.fasta')
-    sequence_records = read_fasta_sequences(fasta_file)
+    # Read sequence records from files.
+    sequence_records = []
+    for fasta_file in fasta_files:
+        sequence_records.extend(read_fasta_sequences(fasta_file))
 
     # Make a peptide info database.
     peptides_db = {}
-    for sequence_record in sequence_records.values():
+    for sequence_record in sequence_records:
         for peptide in sequence_record['peptides']:
             if peptide not in peptides_db:
                 peptides_db[peptide] = get_peptide_data(peptide)
 
     # Assemble data records.
     output_records = []
-    for sequence_record in sequence_records.values():
+    for sequence_record in sequence_records:
         for peptide in sequence_record['peptides']:
             peptide_data = peptides_db[peptide]
             if MAX_MASS > peptide_data['mass'] > MIN_MASS:
@@ -100,7 +118,7 @@ def get_peptide_data(peptide):
 
 def read_fasta_sequences(fasta_file):
     """ Read sequence records from a FASTA file. """
-    sequence_records = {}
+    sequence_records = []
     for description, sequence in fasta.read(fasta_file):
         # Initialize sequence record with sequence string.
         sequence_record = {'sequence': sequence}
@@ -117,7 +135,7 @@ def read_fasta_sequences(fasta_file):
         )
 
         # Save the sequence record, keyed by the id.
-        sequence_records[sequence_record['id']] = sequence_record
+        sequence_records.append(sequence_record)
 
     return sequence_records
 
